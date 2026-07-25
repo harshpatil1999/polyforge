@@ -1,0 +1,5 @@
+backend/gateway/node_modules
+backend/gateway/.env
+backend/services/auth/node_modules
+backend/services/auth/.env
+backend/services/auth/serviceAccountKey.json
