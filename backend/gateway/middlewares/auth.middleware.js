@@ -10,10 +10,10 @@ const protect = async (req, res, next) => {
     if (!session) {
       return res.status(400).json({ message: "Session expired!" });
     }
-    req.user = JSON.stringify(session);
+    req.user = JSON.parse(session);
     next();
   } catch (error) {
-    return res.status(500).json(error.message);
+    return res.status(500).json({ message: error.message });
   }
 };
 
