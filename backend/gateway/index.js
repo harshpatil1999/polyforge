@@ -4,6 +4,8 @@ import proxy from "express-http-proxy";
 dotenv.config();
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { getCurrentUser } from "./controllers/user.controller.js";
+import protect from "./middlewares/auth.middleware.js";
 
 const app = express();
 
@@ -17,6 +19,8 @@ app.use(
 app.use(cookieParser());
 
 app.use("/auth", proxy(process.env.AUTH_SERVICE));
+
+app.get("/me", protect, getCurrentUser);
 
 app.get("/", (req, res) => {
   res.json({ message: "Hello from API Gateway!" });
