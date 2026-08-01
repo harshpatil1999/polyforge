@@ -1,6 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectToDB from "./config/db.js";
+import router from "./routes/chat.routes.js";
+
 dotenv.config();
 
 const app = express();
