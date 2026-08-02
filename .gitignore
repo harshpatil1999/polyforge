@@ -6,3 +6,5 @@ backend/services/auth/serviceAccountKey.json
 backend/node_modules
 backend/services/chat/node_modules
 backend/services/chat/.env
+backend/services/agent/node_modules
+backend/services/agent/.env
