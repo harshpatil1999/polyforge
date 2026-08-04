@@ -4,6 +4,7 @@ import proxy from "express-http-proxy";
 dotenv.config();
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
 import { getCurrentUser } from "./controllers/user.controller.js";
 import protect from "./middlewares/auth.middleware.js";
 import { proxyWithHeader } from "./utils/proxyWithHeader.js";
@@ -16,6 +17,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use(morgan("dev"));
 
 app.use(cookieParser());
 
