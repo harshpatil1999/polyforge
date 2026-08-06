@@ -1,11 +1,12 @@
 import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
+import redis from "../../../shared/redis/redis.js";
 
 export const agentController = async (req, res) => {
   try {
     const { conversationId, prompt } = req.body;
-    await addMessage(conversationId, "user", prompt);
+    await redis.del(`messages-${conversationId}`);
     await axios.post(`${process.env.CHAT_SERVICE}/saveMessage`, {
       conversationId,
       role: "user",
@@ -16,6 +17,7 @@ export const agentController = async (req, res) => {
       prompt,
     });
     const response = result.aiResponse;
+    await addMessage(conversationId, "user", prompt);
     await addMessage(conversationId, "assistant", response);
     await axios.post(`${process.env.CHAT_SERVICE}/saveMessage`, {
       conversationId,
