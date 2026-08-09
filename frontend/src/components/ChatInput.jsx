@@ -1,4 +1,15 @@
-import { Paperclip, Mic, Send } from "lucide-react";
+import {
+  Paperclip,
+  Mic,
+  Send,
+  Zap,
+  MessageSquare,
+  Code2,
+  FileText,
+  Presentation,
+  ImageIcon,
+  Globe,
+} from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../features/sendMessage";
@@ -6,12 +17,14 @@ import { addMessage } from "../redux/messageSlice";
 import { createConversation } from "../features/createConversation";
 import {
   addConversation,
+  setConversationTitle,
   setSelectedConversation,
 } from "../redux/conversationSlice";
 import { updateConversation } from "../features/updateConversation";
 
 function ChatInput() {
   const [value, setValue] = useState("");
+  const [selectedAgent, setSelectedAgent] = useState("Auto");
   const { selectedConversation } = useSelector((state) => state.conversation);
   const { messages } = useSelector((state) => state.message);
   const dispatch = useDispatch();
@@ -24,10 +37,16 @@ function ChatInput() {
       conversation = conv;
     }
     if (conversation.title == "New Chat") {
-      const conv = await updateConversation({
+      await updateConversation({
         id: conversation?._id,
         title: value.trim(),
       });
+      dispatch(
+        setConversationTitle({
+          conversationId: conversation?._id,
+          title: value.slice(0, 40),
+        }),
+      );
     }
     const payload = {
       conversationId: conversation?._id,
@@ -39,9 +58,64 @@ function ChatInput() {
     dispatch(addMessage({ role: "assistant", content: data }));
     console.log(data);
   };
+  const agents = [
+    {
+      id: "auto",
+      icon: Zap,
+      label: "Auto",
+    },
+    {
+      id: "chat",
+      icon: MessageSquare,
+      label: "Chat",
+    },
+    {
+      id: "coding",
+      icon: Code2,
+      label: "Coding",
+    },
+    {
+      id: "pdf",
+      icon: FileText,
+      label: "PDF",
+    },
+    {
+      id: "ppt",
+      icon: Presentation,
+      label: "PPT",
+    },
+    {
+      id: "image",
+      icon: ImageIcon,
+      label: "Image",
+    },
+    {
+      id: "search",
+      icon: Globe,
+      label: "Search",
+    },
+  ];
   return (
     <div className="w-full overflow-hidden px-3 md:px-5 py-4 border-t border-white/[0.06] bg-[#0d0f14]">
       <div className="flex flex-col gap-2 bg-white/[0.03] border border-white/[0.07] rounded-2xl px-4 pt-3.5 pb-3">
+        <div className="flex w-[80%] gap-2 pr-2 flex-wrap">
+          {agents.map((agent) => {
+            const isActive = selectedAgent === agent.label;
+            const Icon = agent.icon;
+            return (
+              <div
+                onClick={() => setSelectedAgent(agent.label)}
+                className={`flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium border transition-all ${isActive ? "bg-gradient-to-r from-indigo-500 to-violet-600 text-white border-transparent shadow-[0_1px_8px_rgba(99, 102, 241, .35)]" : "bg-white/[0.03] text-slate-400 border-white/[0.06] hover:bg-white/[0.07]"}`}
+              >
+                <Icon
+                  size={14}
+                  className={isActive ? "text-white" : "text-slate-600"}
+                />
+                {agent.label}
+              </div>
+            );
+          })}
+        </div>
         <textarea
           placeholder="Ask me anything..."
           value={value}
