@@ -51,6 +51,7 @@ function ChatInput() {
     const payload = {
       conversationId: conversation?._id,
       prompt: value.trim(),
+      agent: selectedAgent.toLowerCase(),
     };
     dispatch(addMessage({ role: "user", content: value.trim() }));
     setValue("");
