@@ -6,7 +6,7 @@ import redis from "../../../shared/redis/redis.js";
 export const agentController = async (req, res) => {
   try {
     const { conversationId, prompt, agent } = req.body;
-    await redis.del(`messages-${conversationId}`);
+    // await redis.del(`messages-${conversationId}`);
     await axios.post(`${process.env.CHAT_SERVICE}/saveMessage`, {
       conversationId,
       role: "user",
@@ -24,8 +24,9 @@ export const agentController = async (req, res) => {
       conversationId,
       role: "assistant",
       content: response,
+      images: result.images,
     });
-    return res.status(200).json(response);
+    return res.status(200).json({ answer: response, images: result.images });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
