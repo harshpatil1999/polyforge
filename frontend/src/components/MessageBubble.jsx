@@ -1,11 +1,21 @@
 import { useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ExternalLink, FileX2, X } from "lucide-react";
+import { Check, Copy, ExternalLink, FileX2, X } from "lucide-react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function MessageBubble({ role, content, images }) {
   const isUser = role === "user";
   const [lightBox, setLightBox] = useState(null);
+  const [copiedCode, setCopiedCode] = useState("");
+  const copyCode = async (code) => {
+    await navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => {
+      setCopiedCode("");
+    }, 2000);
+  };
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -72,6 +82,59 @@ function MessageBubble({ role, content, images }) {
                 <ExternalLink size={14} />
               </a>
             ),
+            code: ({ className, children }) => {
+              const value = String(children)
+                .replace(/^\s*```[^\n]*\n/, "")
+                .replace(/\n```\s*$/, "")
+                .trim();
+              if (!className) {
+                return (
+                  <code className="px-1.5 py-0.5 rounded bg-white/10 text-pink-400">
+                    {value}
+                  </code>
+                );
+              }
+              const language = className?.replace("language-", "");
+              return (
+                <div className="my-4 overflow-hidden rounded-xl border border-white/10 bg-[#111318]">
+                  <div className="flex items-center justify-between bg-[#1b1d24] border-b border-white/10 px-4 py-2">
+                    <span className="uppercase text-xs text-slate-400">
+                      {language}
+                    </span>
+                    <button
+                      className="flex items-center gap-1 text-xs"
+                      onClick={() => copyCode(value)}
+                    >
+                      {" "}
+                      {copiedCode == value ? (
+                        <>
+                          <Check size={14} /> Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={14} />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <SyntaxHighlighter
+                    language={language}
+                    style={oneDark}
+                    wrapLongLines
+                    showLineNumbers
+                    customStyle={{
+                      margin: 0,
+                      padding: "16px",
+                      background: "#0d1117",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {value}
+                  </SyntaxHighlighter>
+                </div>
+              );
+            },
           }}
         >
           {content}
