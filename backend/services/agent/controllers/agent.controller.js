@@ -17,16 +17,20 @@ export const agentController = async (req, res) => {
       prompt,
       agent,
     });
-    const response = result.aiResponse;
     await addMessage(conversationId, "user", prompt);
-    await addMessage(conversationId, "assistant", response);
+    await addMessage(conversationId, "assistant", result?.aiResponse);
     await axios.post(`${process.env.CHAT_SERVICE}/saveMessage`, {
       conversationId,
       role: "assistant",
-      content: response,
-      images: result.images,
+      content: result?.aiResponse,
+      images: result?.images,
+      artifacts: result?.artifacts,
     });
-    return res.status(200).json({ answer: response, images: result.images });
+    return res.status(200).json({
+      answer: result?.aiResponse,
+      images: result?.images,
+      artifacts: result?.artifacts,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
