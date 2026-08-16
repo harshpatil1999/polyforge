@@ -3,7 +3,7 @@ import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { setMessages } from "../redux/messageSlice";
+import { setArtifacts, setMessages } from "../redux/messageSlice";
 import { getMessages } from "../features/getMessages";
 
 function ChatArea() {
@@ -15,6 +15,10 @@ function ChatArea() {
         if (selectedConversation.title == "New Chat") return;
         const data = await getMessages(selectedConversation?._id);
         dispatch(setMessages(data));
+        const latestArtifactMessage = [...data]
+          .reverse()
+          .find((msg) => msg.artifacts && msg.artifacts.length > 0);
+        dispatch(setArtifacts(latestArtifactMessage.artifacts || []));
       }
     };
     displayMessages();
