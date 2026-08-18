@@ -42,6 +42,10 @@ export const codingAgent = async (state) => {
     - Beautiful spacing
     - Single page unless requested otherwise
 
+    Always use real Unsplash images.
+
+    Never use placeholders.
+
     Return ONLY valid JSON.
 
     The schema should look like this:

@@ -1,4 +1,5 @@
 import {
+  Check,
   Code2,
   Copy,
   Eye,
@@ -8,14 +9,16 @@ import {
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { easeInOut, motion } from "motion/react";
+import Editor from "@monaco-editor/react";
 
 function Artifact() {
   const [collapsed, setCollapsed] = useState(false);
   const { artifacts } = useSelector((state) => state.message);
   const [tab, setTab] = useState("code");
   const [activeFile, setActiveFile] = useState(0);
+  const [copied, setCopied] = useState(false);
   if (artifacts.length == 0) return;
-  const file = artifacts[0]?.files[activeFile]?.content;
+  const file = artifacts[0]?.files[activeFile];
   const htmlFile = artifacts[0]?.files?.find((f) => f.name === "index.html");
   const cssFile = artifacts[0]?.files?.find((f) => f.name === "style.css");
   const jsFile = artifacts[0]?.files?.find((f) => f.name === "script.js");
@@ -31,15 +34,38 @@ function Artifact() {
     </style>
   </head>
   <body>
+  ${htmlFile?.content || ""}
   <script>
   ${jsFile?.content || ""}
   </script>
   </body>
   </html>`;
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(file?.content || "");
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  };
+  const detectLanguage = (fileName = "") => {
+    const name = fileName.toLowerCase();
+    if (name.endsWith(".html")) return "html";
+    if (name.endsWith(".css")) return "css";
+    if (name.endsWith(".js")) return "javascript";
+    if (name.endsWith(".jsx")) return "javascript";
+    if (name.endsWith(".ts")) return "typescript";
+    if (name.endsWith(".tsx")) return "typescript";
+    if (name.endsWith(".json")) return "json";
+    if (name.endsWith(".py")) return "python";
+    if (name.endsWith(".java")) return "java";
+    if (name.endsWith(".cpp")) return "cpp";
+    if (name.endsWith(".c")) return "c";
+    return "plaintext";
+  };
   return (
     <motion.div
-      initial={{ width: 350 }}
-      animate={{ width: collapsed ? 48 : 350 }}
+      initial={{ width: 400 }}
+      animate={{ width: collapsed ? 48 : 400 }}
       transition={{
         duration: 0.25,
         ease: easeInOut,
@@ -64,8 +90,11 @@ function Artifact() {
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] rounded-lg transition-colors duration-150 bg-transparent border-none cursor-pointer">
-                <Copy size={15} />
+              <button
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] rounded-lg transition-colors duration-150 bg-transparent border-none cursor-pointer"
+                onClick={handleCopy}
+              >
+                {copied ? <Check size={15} /> : <Copy size={15} />}
               </button>
             </div>
             {canPreview && (
@@ -100,7 +129,47 @@ function Artifact() {
               ))}
             </div>
           )}
-          <div></div>
+          <div className="flex-1 overflow-hidden">
+            {tab == "preview" && canPreview ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="w-full h-full"
+              >
+                <iframe
+                  title="preview"
+                  srcDoc={previewDoc}
+                  sandbox="allow-scripts"
+                  className="w-full h-full bg-white"
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="w-full h-full"
+              >
+                <Editor
+                  theme="vs-dark"
+                  language={detectLanguage(file?.name)}
+                  value={file?.content}
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    fontSize: 13,
+                    wordWrap: "on",
+                    automaticLayout: true,
+                    scrollBeyondLastLine: false,
+                    padding: { top: 16 },
+                    lineNumbers: "on",
+                    renderLineHighlight: "none",
+                  }}
+                />
+              </motion.div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="hidden lg:flex h-full border-l border-white/[0.06] bg-[#0d0f14] flex-col items-center py-4 gap-3 shrink-0">
