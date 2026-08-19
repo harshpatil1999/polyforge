@@ -7,15 +7,16 @@ import { getModel } from "../config/llmModels.js";
 import { getMemory } from "../config/memory.js";
 
 export const chatAgent = async (state) => {
-  const llm = await getModel("chat");
-  const history = await getMemory(state.conversationId);
-  const searchContext = state.searchResults
-    ? `
+  try {
+    const llm = await getModel("chat");
+    const history = await getMemory(state.conversationId);
+    const searchContext = state.searchResults
+      ? `
   Web search results :
   ${JSON.stringify(state.searchResults)}
   Answer the user using only the above search results.`
-    : "";
-  const systemPrompt = `
+      : "";
+    const systemPrompt = `
   You are PolyForge, an intelligent AI assistant.
   
   ${searchContext}
@@ -40,20 +41,26 @@ export const chatAgent = async (state) => {
   - Never write headings and content on the same line.
   - Never generate large walls of text. 
   `;
-  const messages = [new SystemMessage(systemPrompt)];
-  history.forEach((msg) => {
-    if (msg.role === "user") {
-      messages.push(new HumanMessage(msg.content));
-    }
-    if (msg.role == "assistant") {
-      messages.push(new AIMessage(msg.content));
-    }
-  });
-  messages.push(new HumanMessage(state.prompt));
-  console.log(messages);
-  const response = await llm.invoke(messages);
-  return {
-    ...state,
-    aiResponse: response.content,
-  };
+    const messages = [new SystemMessage(systemPrompt)];
+    history.forEach((msg) => {
+      if (msg.role === "user") {
+        messages.push(new HumanMessage(msg.content));
+      }
+      if (msg.role == "assistant") {
+        messages.push(new AIMessage(msg.content));
+      }
+    });
+    messages.push(new HumanMessage(state.prompt));
+    console.log(messages);
+    const response = await llm.invoke(messages);
+    return {
+      ...state,
+      aiResponse: response.content,
+    };
+  } catch (error) {
+    return {
+      ...state,
+      aiResponse: "❌ Failed to generate response.",
+    };
+  }
 };
