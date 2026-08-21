@@ -1,4 +1,7 @@
 import { getModel } from "../config/llmModels.js";
+import { generatePdf } from "../utils/generatePdf.js";
+import { getFromS3 } from "../utils/getFromS3.js";
+import { uploadToS3 } from "../utils/uploadToS3.js";
 
 export const pdfAgent = async (state) => {
   try {
@@ -30,5 +33,22 @@ export const pdfAgent = async (state) => {
     `;
 
     const res = await llm.invoke(prompt);
-  } catch (error) {}
+    const data = JSON.parse(res.content);
+    const pdfBuffer = await generatePdf(data);
+    const fileName = `pdf-${Date.now()}.pdf`;
+    await uploadToS3(fileName, pdfBuffer, "application/pdf");
+    const downloadUrl = await getFromS3(fileName, 24 * 60);
+    return {
+      ...state,
+      aiResponse: `# PDF Generated Successfully
+**${data.title}**
+⬇️ [Downloaded PDF](${downloadUrl})
+_Link expires in 10 minutes._`,
+    };
+  } catch (error) {
+    return {
+      ...state,
+      aiResponse: `❌ Failed to generate PDF.`,
+    };
+  }
 };
