@@ -42,7 +42,7 @@ export const pdfAgent = async (state) => {
       ...state,
       aiResponse: `# PDF Generated Successfully
 **${data.title}**
-⬇️ [Downloaded PDF](${downloadUrl})
+⬇️ [Download PDF](${downloadUrl})
 _Link expires in 10 minutes._`,
     };
   } catch (error) {

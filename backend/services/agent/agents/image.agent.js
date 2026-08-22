@@ -40,7 +40,7 @@ export const imageAgent = async (state) => {
       aiResponse: `
       ✅ Image Generated Successfully
 ![Generated Image](${downloadUrl})
-      ⬇️ [Downloaded Image](${downloadUrl})
+      ⬇️ [Download Image](${downloadUrl})
       ⏳ Link expires in 10 minutes.`,
     };
   } catch (error) {
