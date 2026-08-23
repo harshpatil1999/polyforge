@@ -8,3 +8,5 @@ backend/services/chat/node_modules
 backend/services/chat/.env
 backend/services/agent/node_modules
 backend/services/agent/.env
+backend/services/billing/node_modules
+backend/services/billing/.env
