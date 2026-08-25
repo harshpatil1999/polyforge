@@ -18,7 +18,7 @@ export const loginController = async (req, res) => {
         avatar: decoded.picture,
       });
     }
-    const sessionId = crypto.randomUUID;
+    const sessionId = crypto.randomUUID();
     await redis.set(
       `session-${sessionId}`,
       JSON.stringify({
@@ -26,6 +26,10 @@ export const loginController = async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        plan: user.plan,
+        credits: user.credits,
+        totalCredits: user.totalCredits,
+        planExpiresAt: user.planExpiresAt,
       }),
       "EX",
       7 * 24 * 60 * 60,
@@ -77,6 +81,10 @@ export const updateUserPaymentController = async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        plan: user.plan,
+        credits: user.credits,
+        totalCredits: user.totalCredits,
+        planExpiresAt: user.planExpiresAt,
       }),
       "EX",
       7 * 24 * 60 * 60,
