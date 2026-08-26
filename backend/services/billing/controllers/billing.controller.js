@@ -2,6 +2,7 @@ import axios from "axios";
 import { PLANS } from "../config/plans.js";
 import razorpay from "../config/razorpay.js";
 import Payment from "../models/payment.model.js";
+import crypto from "crypto";
 
 export const createOrder = async (req, res) => {
   try {
@@ -32,7 +33,7 @@ export const createOrder = async (req, res) => {
   }
 };
 
-export const verifyPayment = async () => {
+export const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
       req.body;

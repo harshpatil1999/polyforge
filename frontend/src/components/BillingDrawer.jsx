@@ -2,6 +2,7 @@ import { Crown, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useSelector } from "react-redux";
 import { createOrder } from "../features/createOrder.js";
+import { verifyPayment } from "../features/verifyPayment.js";
 
 function BillingDrawer({ open, onClose }) {
   const { userData } = useSelector((state) => state.user);
@@ -16,7 +17,15 @@ function BillingDrawer({ open, onClose }) {
         description: `${data?.plan?.name} Plan`,
         order_id: data?.order?.id,
         handler: async (response) => {
-          console.log(response);
+          try {
+            const data = await verifyPayment(response);
+            console.log(data);
+          } catch (error) {
+            console.log(error);
+          }
+        },
+        theme: {
+          color: "#4F46E5",
         },
       };
       const razorpay = new window.Razorpay(options);
@@ -103,8 +112,6 @@ function BillingDrawer({ open, onClose }) {
                   Upgrade
                 </button>
               </div>
-            </div>
-            <div className="px-5 flex-1 overflow-auto space-y-4">
               <div className="rounded-xl border border-white/10 p-4">
                 <h3 className="text-white font-semibold">Pro Plan</h3>
                 <p className="text-indigo-400 text-2xl font-semibold mt-2">
