@@ -13,7 +13,7 @@ import {
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../features/sendMessage";
-import { addMessage, setArtifacts } from "../redux/messageSlice";
+import { addMessage, setArtifacts, setMessages } from "../redux/messageSlice";
 import { createConversation } from "../features/createConversation";
 import {
   addConversation,
@@ -21,16 +21,20 @@ import {
   setSelectedConversation,
 } from "../redux/conversationSlice";
 import { updateConversation } from "../features/updateConversation";
+import { useRef } from "react";
 
 function ChatInput() {
   const [value, setValue] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("Auto");
   const { selectedConversation } = useSelector((state) => state.conversation);
   const { messages } = useSelector((state) => state.message);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileRef = useRef(null);
   const dispatch = useDispatch();
   const handleSendMessage = async () => {
     let conversation = selectedConversation;
     if (!conversation) {
+      dispatch(setMessages([]));
       const conv = await createConversation();
       dispatch(setSelectedConversation(conv));
       dispatch(addConversation(conv));
@@ -48,11 +52,16 @@ function ChatInput() {
         }),
       );
     }
-    const payload = {
-      conversationId: conversation?._id,
-      prompt: value.trim(),
-      agent: selectedAgent.toLowerCase(),
-    };
+    // const payload = {
+    //   conversationId: conversation?._id,
+    //   prompt: value.trim(),
+    //   agent: selectedAgent.toLowerCase(),
+    // };
+    const formData = new FormData();
+    formData.append("prompt", value.trim());
+    formData.append("conversationId", conversation?._id);
+    formData.append("agent", selectedAgent.toLowerCase());
+    formData.append("file", selectedFile);
     dispatch(addMessage({ role: "user", content: value.trim() }));
     setValue("");
     const data = await sendMessage(payload);
@@ -133,7 +142,22 @@ function ChatInput() {
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <button className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer">
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              hidden
+              ref={fileRef}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setSelectedFile(file);
+                }
+              }}
+            />
+            <button
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer"
+              onClick={() => fileRef.current.click()}
+            >
               <Paperclip size={16} />
             </button>
             <button className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer">
