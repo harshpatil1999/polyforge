@@ -12,7 +12,7 @@ export const pdfRagAgent = async (state) => {
     const pdf = new PDFParse({
       data: buffer,
     });
-    const result = pdf.getText();
+    const result = await pdf.getText();
     const text = result.text;
     const splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
@@ -22,7 +22,7 @@ export const pdfRagAgent = async (state) => {
     const collectionName = `pdf-${Date.now()}`;
     const store = await vectorStore(docs, collectionName);
     const relevantDocuments = await store.similaritySearch(state.prompt, 5);
-    const context = relevantDocuments.map((d) => d.pageContent).join("/n/n");
+    const context = relevantDocuments.map((d) => d.pageContent).join("\n\n");
     const llm = await getModel("pdfRag");
     const messages = [
       new SystemMessage(`You are a PolyForge PDF assistant.
