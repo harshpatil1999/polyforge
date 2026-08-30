@@ -152,7 +152,7 @@ function ChatInput() {
               <button
                 className="ml-2"
                 onClick={() => {
-                  selectedFile(null);
+                  setSelectedFile(null);
                   fileRef.current.value = "";
                 }}
               >
