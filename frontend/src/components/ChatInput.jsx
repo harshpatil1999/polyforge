@@ -60,7 +60,7 @@ function ChatInput() {
     formData.append("file", selectedFile);
     dispatch(addMessage({ role: "user", content: value.trim() }));
     setValue("");
-    const data = await sendMessage(payload);
+    const data = await sendMessage(formData);
     setSelectedFile(null);
     dispatch(setArtifacts(data?.artifacts || []));
     dispatch(
