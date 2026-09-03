@@ -1,10 +1,13 @@
+import { checkAgentLimit } from "../config/agentLimit.js";
 import { getModel } from "../config/llmModels.js";
 import { deductCredits } from "../utils/deductCredits.js";
 
 export const codingAgent = async (state) => {
-  const intentLLM = await getModel("intent");
-  const llm = await getModel("coding");
-  const intentResponse = await intentLLM.invoke(`
+  try {
+    await checkAgentLimit(state.userId, "coding");
+    const intentLLM = await getModel("intent");
+    const llm = await getModel("coding");
+    const intentResponse = await intentLLM.invoke(`
     You are an intent classifier.
     Return ONLY one of the following values:
 
@@ -19,10 +22,10 @@ export const codingAgent = async (state) => {
     User Request:
     ${state.prompt}
 `);
-  const intent = intentResponse.content;
-  console.log(intent);
-  if (intent == "CODE_GENERATION") {
-    const prompt = `
+    const intent = intentResponse.content;
+    console.log(intent);
+    if (intent == "CODE_GENERATION") {
+      const prompt = `
     You are PolyForge coding agent.
     Generate the requested project.
     Default stack:
@@ -80,24 +83,24 @@ export const codingAgent = async (state) => {
     
     User Request:
     ${state.prompt}`;
-    const res = await llm.invoke(prompt);
-    console.log(JSON.parse(res.content));
-    const data = JSON.parse(res.content);
-    await deductCredits(state.userId, "coding");
-    return {
-      ...state,
-      aiResponse: "Code generated successfully...",
-      artifacts: [
-        {
-          id: Date.now(),
-          type: "Project",
-          files: data.files || [],
-          title: state.prompt,
-        },
-      ],
-    };
-  }
-  const res = await llm.invoke(`
+      const res = await llm.invoke(prompt);
+      console.log(JSON.parse(res.content));
+      const data = JSON.parse(res.content);
+      await deductCredits(state.userId, "coding");
+      return {
+        ...state,
+        aiResponse: "Code generated successfully...",
+        artifacts: [
+          {
+            id: Date.now(),
+            type: "Project",
+            files: data.files || [],
+            title: state.prompt,
+          },
+        ],
+      };
+    }
+    const res = await llm.invoke(`
     The user's request is:
     ${intent}
     
@@ -119,11 +122,19 @@ export const codingAgent = async (state) => {
 
     User Request:
     ${state.prompt}`);
-  const data = res.content;
-  await deductCredits(state.userId, "coding");
-  return {
-    ...state,
-    aiResponse: data,
-    artifacts: [],
-  };
+    const data = res.content;
+    await deductCredits(state.userId, "coding");
+    return {
+      ...state,
+      aiResponse: data,
+      artifacts: [],
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      ...state,
+      aiResponse: error?.data?.message || "❌ Failed to generate code.",
+      artifacts: [],
+    };
+  }
 };

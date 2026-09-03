@@ -1,9 +1,9 @@
 import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
-import redis from "../../../shared/redis/redis.js";
+// import redis from "../../../shared/redis/redis.js";
 
-export const agentController = async (req, res) => {
+export const agentController = async (req, res, next) => {
   try {
     const { conversationId, prompt, agent } = req.body;
     const file = req.file;
@@ -36,6 +36,7 @@ export const agentController = async (req, res) => {
       artifacts: result?.artifacts,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    // return res.status(500).json({ message: error.message });
+    next(error);
   }
 };
