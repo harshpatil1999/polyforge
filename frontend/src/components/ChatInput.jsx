@@ -10,8 +10,9 @@ import {
   ImageIcon,
   Globe,
   X,
+  MicOff,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../features/sendMessage";
 import {
@@ -35,8 +36,46 @@ function ChatInput() {
   const { selectedConversation } = useSelector((state) => state.conversation);
   const { messages, isLoading } = useSelector((state) => state.message);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef(null);
   const fileRef = useRef(null);
   const dispatch = useDispatch();
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (
+        let index = event.resultIndex;
+        index < event.results.length;
+        index++
+      ) {
+        transcript += event.results[index][0].transcript;
+      }
+      setValue(transcript);
+    };
+    recognition.onend = () => {
+      setListening(false);
+    };
+    recognitionRef.current = recognition;
+  }, []);
+  const toggleMic = () => {
+    if (!recognitionRef.current) {
+      alert("Speech Recognition is not supported!");
+    }
+    if (listening) {
+      recognitionRef.current.stop();
+      setListening(false);
+    } else {
+      recognitionRef.current.start();
+      setListening(true);
+    }
+  };
   const handleSendMessage = async () => {
     dispatch(setIsLoading(true));
     let conversation = selectedConversation;
@@ -197,8 +236,11 @@ function ChatInput() {
             >
               <Paperclip size={16} />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer">
-              <Mic size={16} />
+            <button
+              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${listening ? "bg-red-400 text-white" : "text-slate-600 hover:bg-white/[0.06]"}`}
+              onClick={toggleMic}
+            >
+              {listening ? <Mic size={16} /> : <MicOff size={16} />}
             </button>
           </div>
           <button
